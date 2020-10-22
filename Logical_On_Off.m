@@ -117,12 +117,13 @@ switch consec_mode
         end
         
         start_time = round(1000*(startsess));
-        
+  
         for i = 1:2:size(allp,1)
-            
+
             response((allp(i,1)+1:allp(i+1,1)) - start_time) = true;
+
         end    
-        
+      
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case 'robust'
         %last keeps track of whether the prior time was an off or an on (its
@@ -153,6 +154,7 @@ switch consec_mode
             end
         end
 end
+
 end
         
         
