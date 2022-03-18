@@ -16,7 +16,7 @@ Times = arrayfun(@(x) Time_Series(Time_Series - x > pre & Time_Series - x <= pos
 %bit). Note that if the size of the window to be saved gets too large,
 %single data type will start losing precision
 
-elseif any(strcmp(varargin{1},{'single', 'Single'})) 
+elseif any(strcmpi(varargin{1},'Single')) 
     
 Times = arrayfun(@(x) single(Time_Series(Time_Series - x > pre & Time_Series - x <= post) - x), Events, 'UniformOutput', false);
 
