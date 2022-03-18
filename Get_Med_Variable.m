@@ -1,36 +1,74 @@
-function [Values] = Get_Med_Variable(Filename,Variable)
+function [DAT] = Get_Med_Variable(Filename,Variable)
 %This function outputs the values for a given variable from a Med
 %Associates file
 
 %Inputs:
 %Filename: string - filename of the Med Associates raw data file
-%Variable: string - letter variable to be pulled
+%Variable: string or cell - letter variable to be pulled; if multiple, put
+    %each variable as a string in a cell array
 %datatype: currently the outputs are double
 
-%Values: double - vector of all values stored for the input Variable in the Med
-            %Associates file
-            
+%Outputs
+%Output is a structure with header information and variable information as
+    %fields
+%string variable fields: double - vector of all values stored for the input 
+    %Variable in the Med Associates file
+ 
 id = fopen(Filename);
+
+%To import the summary variables or headers first import with tab
+%delimiters: Change number of rows if format for MED changes, currently its
+%the fist 10 rows are headers
+Headers = textscan(id, '%s', 10,'delimiter','\t');
+
+%This gets the header info
+I = cellfun(@(x) x(strfind(x,':')+2:end),Headers{1},'UniformOutput',false);
+
+%I{1} is the filename:
+DAT.Filename = I{1};
+DAT.Date = I{2};
+DAT.Subject = str2double(I{4});
+DAT.Experiment = I{5};
+DAT.Group = I{6};
+DAT.Box = I{7};
+DAT.Start_Time = I{8};
+DAT.Protocol = I{10};
+
+
+%Import the data
 T = textscan(id, '%s');
 
 %find the colons
 colons = cellfun(@(x) any(strfind(x,':')),T{1});
 
-%find the variable
-Start = strncmp(strcat(Variable,':'),T{1},2);
-use = false(size(T{1}));
-use(find(Start)+1:end) = true;
+%loop through each Variable if the input is a cell array
+if iscell(Variable)
+    n_var = numel(Variable);
+    Var = Variable;
+else
+    n_var = 1;
+    Var{1} = Variable;
+    
+end
 
 %find any lines with a letter included
 Alphas = cellfun(@any,isstrprop(T{1},'alpha'));
 
-%find the first variable following the variable of interest and set following values as false 
-use(find(use & Alphas,1):end) = false;
-
-%remove any entries with colons
-use = use & ~colons;
-
-Values = cellfun(@(x) str2double(x),T{1}(use));
+for i = 1:n_var
+    
+    %find the variable
+    Start = strncmp(strcat(Var{i},':'),T{1},2);
+    use = false(size(T{1}));
+    use(find(Start)+1:end) = true;
+    
+    %find the first variable following the variable of interest and set following values as false
+    use(find(use & Alphas,1):end) = false;
+    
+    %remove any entries with colons
+    use = use & ~colons;
+    
+    DAT.(Var{i}) = cellfun(@(x) str2double(x),T{1}(use));
+end
 
 fclose(id);
 end
