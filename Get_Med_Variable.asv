@@ -37,11 +37,11 @@ DAT.Protocol = I{10};
 
 %Import the data
 T = textscan(id, '%s');
-%All data is put in the first cell of T, set T to just the first cell
+%
 T = T{1};
 
 %find the colons
-colons = cellfun(@(x) any(strfind(x,':')),T);
+colons = cellfun(@(x) any(strfind(x,':')),T{1});
 
 %loop through each Variable if the input is a cell array
 if iscell(Variable)
@@ -54,13 +54,13 @@ else
 end
 
 %find any lines with a letter included
-Alphas = cellfun(@any,isstrprop(T,'alpha'));
+Alphas = cellfun(@any,isstrprop(T{1},'alpha'));
 
 for i = 1:n_var
     
     %find the variable
-    Start = strncmp(strcat(Var{i},':'),T,2);
-    use = false(size(T));
+    Start = strncmp(strcat(Var{i},':'),T{1},2);
+    use = false(size(T{1}));
     use(find(Start)+1:end) = true;
     
     %find the first variable following the variable of interest and set following values as false
@@ -69,7 +69,7 @@ for i = 1:n_var
     %remove any entries with colons
     use = use & ~colons;
     
-    DAT.(Var{i}) = cellfun(@(x) str2double(x),T(use));
+    DAT.(Var{i}) = cellfun(@(x) str2double(x),T{1}(use));
 end
 
 fclose(id);
